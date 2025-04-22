@@ -1,0 +1,21 @@
+@startuml
+actor Оператор as Operator
+participant "MES (Frontend)" as Frontend
+participant "MES (Backend)" as Backend
+participant "Redis (Кэш)" as Cache
+participant "База данных" as DB
+
+alt Обновление кэша по расписанию
+    Backend -> DB: Запрашивает данные из базы
+    DB --> Backend: Возвращает данные
+    Backend -> Cache: Сохраняет данные в кэш (TTL = 1-5 мин)
+end
+
+Operator -> Frontend: Загружает первую страницу MES
+Frontend -> Backend: Запрос списка заказов (фильтры + пагинация)
+Backend -> Cache: Проверяет наличие данных в кэше
+Cache --> Backend: Возвращает закэшированные данные
+
+Backend --> Frontend: Возвращает список заказов
+Frontend --> Operator: Отображает список
+@enduml
